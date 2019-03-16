@@ -1,10 +1,21 @@
 from math import sqrt
-from statistics import variance, median_high
+from statistics import variance, median_low
 from collections import namedtuple
-from copy import deepcopy
 
-import random
-import matplotlib.pyplot as plt
+class Point:
+    __point = namedtuple('Point', 'x y')
+
+    def __init__(self, x: float, y: float):
+        self.x = x
+        self.y = y
+        self.__tuple = Point.__point(self.x, self.y)
+
+    def __repr__(self):
+        return str(self.__tuple)
+
+    __str__ = __repr__
+
+
 
 class Point:
     __point = namedtuple('Point', 'x y')
@@ -73,21 +84,15 @@ class KDTree:
                 node = node.right
             else:
                 node = node.left
-        
-        path_copy = deepcopy(path)
-        # path保存了寻找叶子节点所经过的路径节点
+        path_copy = path.copy()
+        # path保存了寻找叶子节点所经过的路径节点，path_copy浅复制
         dist = KDTree.distance(path[-1].p, p)
         r = [dist, path[-1].p] # 暂时的最短组合, r[0]保存了最短距离
         # 回溯查找
-#         plt.figure(figsize=(6,6))
-#         k = 0
-#         plt.scatter([getattr(p, 'x') for p in self.__points],[getattr(p,'y') for p in self.__points],c='black',s=5)
         while len(path) != 0:
             back_p = path.pop()
             if back_p is None:
                 continue
-#             plt.scatter([back_p.p.x], [back_p.p.y], s=12)
-#             k += 1
             dist = KDTree.distance(back_p.p, p)
             if dist < r[0]:
                 r[0], r[1] = dist, back_p.p
@@ -99,13 +104,16 @@ class KDTree:
                 if diff >= 0:
                     path.append(back_p.right)
             elif back_p not in path_copy:
-                push = back_p.right if diff < 0 else back_p.left # 刚好与上面的if语句相反
-                path.append(push)
-                
-#         plt.scatter([r[1].x], [r[1].y],c='blue',s=20)
-#         plt.legend([''] + [str(i) for i in range(1, k+1)], bbox_to_anchor=(1.2, 1))
-#         plt.scatter([x], [y], marker='D', c="red", s=20)
-#         plt.xlim(-10, 10)
-#         plt.ylim(-10, 10)
-#         plt.savefig('/data/jupyter/1.jpg', dpi=800)
-        return r[1]
+                if diff <= 0:    # 刚好与上面的if语句相反
+                    path.append(back_p.right)
+                if diff >= 0:
+                    path.append(back_p.left)
+        return r[1]    
+  
+
+
+p1, p2, p3, p4, p5, p6 , p7= Point(2, 3), Point(4, 7), Point(5, 4), Point(7, 2), Point(8, 1), Point(9, 6), Point(100,8)
+
+kdt = KDTree([p1, p2, p3, p4, p5, p6, p7])
+
+print(kdt.nearest(12, 3))
